@@ -1,0 +1,78 @@
+{% extends "index.html" %}
+
+
+{% block title %}
+    Dashboard: About Us
+{% endblock %}
+
+
+{% block content %}
+<div class="logo">
+    <img src="/static/image/logov2.png" alt="KollinKars Logo" width="85%">
+    <div class="close">
+        <span class="material-symbols-outlined">close</span>
+    </div>
+</div>
+<nav>
+    <ul>
+        <li>
+            <a href="/" id="dashboard-link">
+                <span class="material-symbols-outlined">
+                    visibility
+                </span>
+                <span class="title">
+                    View
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/add" id="add-link">
+                <span class="material-symbols-outlined">
+                    add_box
+                </span>
+                <span class="title">
+                    Add
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/update" id="edit-link">
+                <span class="material-symbols-outlined">
+                    edit
+                </span>
+                <span class="title">
+                    Update
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/mysql" id="sql-link">
+                <span class="material-symbols-outlined">
+                    integration_instructions
+                </span>
+                <span class="title">
+                    Statistics
+                </span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+
+{% block additional_content %}
+<div class="container"
+     style="margin-right:0;
+            width: 98%;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('/static/image/about.png');
+            background-size: cover;
+            background-position: center;">
+<div>
+{% endblock %}
+
+
+

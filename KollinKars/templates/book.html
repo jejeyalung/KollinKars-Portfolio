@@ -1,0 +1,89 @@
+{% extends "index.html" %}
+
+{% block title %}
+    Dashboard: Current Rental Bookings
+{% endblock %}
+
+{% block content %}
+    <div class="logo">
+        <img src="/static/image/logov2.png" alt="PhilHealth Logo" width="80%">
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <nav>
+        <ul>
+            <li>
+                <a href="/client" id="dashboard-link" style="padding-left: 5px;">
+                    <span class="material-symbols-outlined">
+                        bookmark_add
+                    </span>
+                    <span class="title">
+                        Book Vehicle
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/book" id="sql-link" class="fill" style="padding-left: 5px;">
+                    <span class="material-symbols-outlined full">
+                        beenhere
+                    </span>
+                    <span class="title-full">
+                        Current Bookings
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/manage" id="edit-link" style="padding-left: 5px;">
+                    <span class="material-symbols-outlined">
+                        build
+                    </span>
+                    <span class="title">
+                        Manage Bookings
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+{% block additional_content %}
+<div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%;">
+    {% if bookings %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Rental ID</th>
+                <th>Customer ID</th>
+                <th>Vehicle ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Total Price</th>
+                <th>Rental Status</th>
+                <th>Payment Status</th>
+                <th>Pickup Location</th>
+                <th>Return Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["Rental ID"] }}</td>
+                <td>{{ booking["Customer ID"] }}</td>
+                <td>{{ booking["Vehicle ID"] }}</td>
+                <td>{{ booking["Start Date"] }}</td>
+                <td>{{ booking["End Date"] }}</td>
+                <td>{{ booking["Total Price"] }}</td>
+                <td>{{ booking["Rental Status"] }}</td>
+                <td>{{ booking["Payment Status"] }}</td>
+                <td>{{ booking["Pickup Location"] }}</td>
+                <td>{{ booking["Return Location"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; font-weight: bold;">No bookings yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

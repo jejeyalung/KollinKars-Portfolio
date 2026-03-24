@@ -1,0 +1,430 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Verdana;
+}
+
+::-webkit-scrollbar{
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track{
+    background: white;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #343660;
+}
+
+::-webkit-scrollbar-thumb{
+    background: #748d9e;
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(#010314, #ad92f6);
+}
+
+.full {
+    font-variation-settings:
+        'FILL'1,
+        'wght'400,
+        'GRAD'0,
+        'opsz'48
+}
+
+.overlay {
+    display: none;
+}
+
+.container {
+    position: relative;
+    width: 95%;
+    height: 90vh;
+    background: linear-gradient(#7e50c6, #8b5ebf);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, .1),
+        0 0 10px rgba(0, 0, 0, .2),
+        0 0 15px rgba(0, 0, 0, .2);
+    padding: 20px;
+    display: flex;
+    overflow: hidden;
+}
+
+.bg {
+    padding: 0px;
+    border: 0px;
+    background: url('/static/image/bg.png');
+    background-size: auto 100%;
+}
+
+.mainportal {
+	width: 71.5%;
+	height: 100%;
+	overflow: hidden;
+    background: white;
+    border-radius: 30px;
+	position: absolute;
+    right: 0;
+}
+
+.mainportal h5,
+.mainportal h4 {
+	margin-left: 12rem;
+	color: #6A6A6A;
+}
+
+.create,
+.signup {
+	position: relative;
+	width:100%;
+	height: 100%;
+}
+
+label {
+    color: #454879;
+	font-size: 2.3em;
+	justify-content: center;
+	display: flex;
+	margin: 50px 50px 25px 50px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: .5s ease-in-out;
+}
+
+input {
+	width: 60%;
+	height: 10px;
+    border: 2px solid #d5d5d5;
+	background: #fff;
+	justify-content: center;
+	display: flex;
+	margin: 20px auto;
+	padding: 20px;
+	border-radius: 5px;
+}
+
+input .login {
+    background: #DAD5FE;
+}
+
+button {
+	width: 60%;
+	height: 40px;
+	margin: 10px auto;
+	justify-content: center;
+	display: block;
+	color: #fff;
+	background: #343660;
+	font-size: 1em;
+	font-weight: bold;
+	margin-top: 30px;
+	outline: none;
+	border: none;
+	border-radius: 5px;
+	transition: .2s ease-in;
+	cursor: pointer;
+}
+
+.role-btn {
+	color: #454879;
+	background: #fff;
+    border: 1.5px solid #5485a6;
+	width: 48%;
+	margin: 5px auto;
+}
+
+.active,
+button:hover {
+	background: #454879;
+	color: #fff;
+}
+
+.login {
+	height: 460px;
+    background-color: rgba(255, 255, 255, 1);
+	border-radius: 60% / 10%;
+	transform: translateY(-180px);
+	transition: .8s ease-in-out;
+}
+
+.login label{
+	color: #573b8a;
+	transform: scale(.6);
+}
+
+.alert-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    z-index: 1000;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.container .left {
+    position: relative;
+    width: 250px;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 1);
+    backdrop-filter: blur(5px);
+    border-radius: 20px;
+    box-shadow: rgba(255, 255, 255, 0.5) 35px 35px 68px 0px,
+        inset rgba(255, 255, 255, 0.6) -8px -8px 16px 0px,
+        inset rgb(255, 255, 255) 0px 11px 28px 0px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.container .left header {
+    position: relative;
+    width: 100%;
+}
+
+.container .left header .logo {
+    position: relative;
+    margin-bottom: 15px;
+    padding-left: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container .left header .logo .close {
+    position: relative;
+    left: -20px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    display: none;
+    cursor: pointer;
+}
+/* nav start */
+.container .left header nav {
+    position: relative;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.container .left header nav ul {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.container .left header nav ul li {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container .left header nav ul li a {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-decoration: none;
+    padding-left: 20px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    transition: .3s ease;
+}
+
+.container .left header nav ul li .fill,
+.container .left header nav ul li a:hover {
+    transition: 0s;
+    background: #eeffef;
+    color: #61C160;
+}
+
+.container .left header nav ul li a::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    width: 0;
+    height: 100%;
+    background: #6577ff;
+    transition: .3s ease;
+}
+
+.container .left header nav ul li a .material-symbols-outlined {
+    color: #999;
+    font-size: 1.7em;
+    margin-right: 10px;
+}
+
+.container .left header nav ul li a .title-full,
+.container .left header nav ul li a .title {
+    color: #999;
+    font-size: 1.1em;
+}
+
+.container .left header nav ul li a .full,
+.container .left header nav ul li a .title-full,
+.container .left header nav ul li a:hover .material-symbols-outlined,
+.container .left header nav ul li a:hover .title {
+    color: #292b49;
+}
+
+.container .right {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+}
+
+main {
+    display: block;
+}
+
+#form{
+    width: 30%;
+    margin: 1px auto;
+    text-align: center;
+}
+
+#form button {
+    border-radius: 30px;
+    box-shadow: none;
+    border: none;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+#form input {
+    padding: 13px 20px;
+    margin-right: 2.7rem;
+    width: 58%;
+    background-color: white;
+}
+
+#form input,
+#form input::placeholder{
+    letter-spacing: 0.7px;
+}
+
+.inputBox button {
+    width: 200px;
+    border-radius: 30px;
+    margin-top: 10px;
+}
+
+.inputBox input {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    border-radius: 30px;
+    outline: none;
+    border: 1.5px solid #5485a6;
+    background: white;
+    margin-right: 10px;
+    font-size: 1.2em;
+    color: #000;
+}
+
+.table-btn,
+.query-btn {
+	color: #3f3361;
+	background: #fff;
+    border: 1.5px solid #5485a6;
+	width: 30%;
+	margin: auto;
+	border-radius: 30px;
+	transition: .2s ease-in;
+	cursor: pointer;
+    margin-left: 0px
+}
+
+.table-btn.active {
+	color: #fff;
+	background: #454879;
+}
+
+.material-symbols-outlined {
+    cursor: pointer;
+}
+
+@media (max-width: 1176px) {
+    .container .left {
+        position: absolute;
+        left: -300px;
+        height: calc(100% - 5vh);
+        z-index: 11;
+        box-shadow: none;
+        transition: .5s ease;
+    }
+
+    .container .left.active {
+        left: 20px;
+    }
+
+    .container .right.overlay::before {
+        content: '';
+        position: absolute;
+        background: rgba(0, 0, 0, .4);
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        border-radius: 20px;
+    }
+
+    .container .right .top .user .toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 927px) {
+    .container {
+        height: 100%;
+        margin: 30px 0;
+    }
+
+    .container .left.active {
+        width: calc(100% - 40px);
+        height: calc(100vh - 55px);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .container .left header .logo .close {
+        display: block;
+    }
+
+    .container .right main {
+        grid-template-columns: repeat(1, 1fr);
+        grid-template-rows: 1.4fr 1.4fr 1.6fr 1.3fr 1fr 1.3fr;
+    }
+
+    .container .right main * {
+        grid-row: unset !important;
+        grid-column: unset !important;
+    }
+}
+

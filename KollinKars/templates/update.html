@@ -1,0 +1,461 @@
+{% extends "index.html" %}
+
+
+{% block title %}
+    Dashboard: Update Record
+{% endblock %}
+
+
+{% block content %}
+    <div class="logo">
+        <img src="/static/image/logov2.png" alt="PhilHealth Logo" width="80%">
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <nav>
+        <ul>
+            <li>
+                <a href="/dashboard" id="dashboard-link">
+                    <span class="material-symbols-outlined">
+                        visibility
+                    </span>
+                    <span class="title">
+                        View
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/add" id="add-link">
+                    <span class="material-symbols-outlined">
+                        add_box
+                    </span>
+                    <span class="title">
+                        Add
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/update" id="edit-link" class="fill">
+                    <span class="material-symbols-outlined full">
+                        edit
+                    </span>
+                    <span class="title-full">
+                        Update
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/mysql" id="sql-link">
+                    <span class="material-symbols-outlined">
+                        integration_instructions
+                    </span>
+                    <span class="title">
+                        Statistics
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+
+{% block additional_content %}
+<div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%;">
+    <div style="display: flex; justify-content: space-between; margin-left: 12rem; margin-right: 12rem; margin-bottom: 0px;">
+        <button class="table-btn" data-table="rental">Car Rentals</button>
+        <button class="table-btn active" data-table="customer">Customers</button>
+        <button class="table-btn" data-table="vehicle">Vehicles</button>
+    </div>
+    <div class="table-container">
+        <table id="data-table">
+            <thead id="table-head" class="attributes">
+                <!-- Table headers will be inserted here -->
+            </thead>
+            <tbody id="table-body">
+                <!-- Table data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="inputBox">
+        <input type="text" autocomplete="off" placeholder="Enter primary key.." id="userInput">
+        <button type="submit" id="searchButton">Search</button>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableButtons = document.querySelectorAll('.table-btn');
+        const searchButton = document.getElementById('searchButton');
+        const userInput = document.getElementById('userInput');
+        let currentTable = 'customer';
+
+
+        tableButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tableName = this.getAttribute('data-table');
+                currentTable = tableName;
+                fetchTableData(tableName);
+                tableButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+
+        searchButton.addEventListener('click', () => {
+            const searchValue = userInput.value.trim().toLowerCase();
+            if (searchValue) {
+                searchAndHighlight(searchValue);
+            }
+        });
+
+
+        function fetchTableData(tableName) {
+            fetch(`/get_table_data/${tableName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableHead = document.getElementById('table-head');
+                    const tableBody = document.getElementById('table-body');
+
+
+                    tableHead.innerHTML = '';
+                    tableBody.innerHTML = '';
+
+
+                    const id = data.primary_key;
+
+
+                    if (data.data.length > 0) {
+                        const columnNames = data.columns;
+                        let headerRow = '<tr>';
+                        columnNames.forEach(column => {
+                            headerRow += `<td>${column}</td>`;
+                        });
+                        headerRow += `<td class="action" style="color:#3d4074;">Actions</td>`;
+                        headerRow += '</tr>';
+                        tableHead.innerHTML = headerRow;
+
+
+                        data.data.forEach(row => {
+                            let dataRow = '<tr>';
+                            columnNames.forEach(column => {
+                                dataRow += `<td>${row[column]}</td>`;
+                            });
+                            dataRow += `<td class="action">
+                                    <span class="material-symbols-outlined edit" data-id="${row[id]}">
+                                    edit
+                                    </span>
+                                    <span class="material-symbols-outlined delete" data-id="${row[id]}">
+                                        delete
+                                    </span>
+                                </td>`;
+                            dataRow += '</tr>';
+                            tableBody.innerHTML += dataRow;
+                        });
+
+
+                        const editSpans = document.querySelectorAll('.edit');
+                        editSpans.forEach(span => {
+                            span.addEventListener('click', function() {
+                                const id = this.getAttribute('data-id');
+                                editRecord(tableName, id);
+                            });
+                        });
+
+
+                        const deleteSpans = document.querySelectorAll('.delete');
+                        deleteSpans.forEach(span => {
+                            span.addEventListener('click', function() {
+                                const id = this.getAttribute('data-id');
+                                deleteRecord(tableName, id);
+                            });
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching table data:', error));
+        }
+
+
+        function validateIdFormat(fieldName, value) {
+            const idPatterns = {
+                "Rental_ID": /^RENT\d{1,11}$/,      // RENT followed by up to 11 digits
+                "Customer_ID": /^CUST\d{1,6}$/,     // CUST followed by up to 6 digits
+                "Vehicle_ID": /^Vehicle\d{1,3}$/    // Vehicle followed by up to 3 digits
+            };
+            const pattern = idPatterns[fieldName];
+            if (pattern && !pattern.test(value)) {
+                return `${fieldName} must follow the correct format`;
+            }
+            return null;
+        }
+
+
+        function editRecord(tableName, id) {
+            fetch(`/get_record/${tableName}/${encodeURIComponent(id)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success === false) {
+                        throw new Error(data.message);
+                    }
+                    const formContainer = document.createElement('div');
+                    formContainer.setAttribute('class', 'form-content');
+                    formContainer.innerHTML = `
+                        <form id="editForm">
+                            <p>EDIT INFORMATION</p>
+                            ${Object.keys(data).map(key => `
+                                <div class="input-container">
+                                    <label for="${key}" class="edit-label">${key}</label>
+                                    <input type="text" id="${key}" name="${key}" value="${data[key]}" class="edit-input">
+                                </div>
+                            `).join('')}
+                            <div id="error-message" style="color: red; margin-top: 10px; text-align: center;"></div>
+                            <div class="edit-btn-container">
+                                <button type="submit">Update</button>
+                                <button type="button" onclick="this.parentElement.parentElement.remove()">Cancel</button>
+                            </div>
+                        </form>
+                    `;
+                    document.body.appendChild(formContainer);
+
+
+                    document.getElementById('editForm').addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const formData = new FormData(event.target);
+                        const updateData = {};
+                        let idErrors = [];
+
+
+                        formData.forEach((value, key) => {
+                            const formatError = validateIdFormat(key, value.trim());
+                            if (formatError) {
+                                idErrors.push(formatError);
+                            }
+                            updateData[key] = value.trim();
+                        });
+
+
+                        if (idErrors.length > 0) {
+                            const errorElement = document.getElementById("error-message");
+                            errorElement.textContent = idErrors.join(" | ");
+                            return;
+                        }
+
+
+                        fetch(`/update_record/${tableName}/${encodeURIComponent(id)}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updateData)
+                        }).then(response => response.json())
+                          .then(result => {
+                              if (result.success) {
+                                  alert('Record updated successfully');
+                                  formContainer.remove();
+                                  fetchTableData(tableName);
+                              } else {
+                                  const errorElement = document.getElementById("error-message");
+                                  errorElement.textContent = result.message || 'Failed to update record.';
+                              }
+                          });
+                    });
+                })
+                .catch(error => console.error('Error fetching record data:', error));
+        }
+
+
+        function deleteRecord(tableName, id) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                fetch(`/delete_record/${tableName}/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Record deleted successfully');
+                        fetchTableData(tableName); // Refresh the table data
+                    } else {
+                        alert('Failed to delete record: ' + result.message);
+                    }
+                })
+                .catch(error => console.error('Error deleting record:', error));
+            }
+        }
+
+
+        fetchTableData('customer');
+    });
+</script>
+
+
+
+
+
+
+<style>
+    .inputBox {
+        margin: 1px auto;
+        bottom: 25px;
+        left: 50%;
+        height: 40px;
+        border-radius: 30px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        margin-top: 0px;
+    }
+
+
+    .table-container {
+        height: 500px;
+        overflow-y: auto;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 0px;
+        border-color: gray;
+        overflow-y: auto;
+        height: 100%;
+    }
+
+
+    thead, tbody {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        border-width: 0px;
+        border-color: gray;
+    }
+
+
+    .attributes{
+        background: #522194;
+        color: white;
+        text-align: center;
+    }
+
+
+    .action {
+        background: white;
+        color: #3d4074;
+        border: 0px;
+    }
+
+
+    th, td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    th {
+        background-color: #f8f9fa;
+    }
+
+
+    td {
+        border-right: 1px solid #ddd;
+        border-left: 1px solid #ddd;
+    }
+
+
+    .actions {
+        white-space: nowrap;
+    }
+
+
+    .actions form {
+        display: inline;
+
+
+    }
+
+
+    body {
+        display: flex;
+        flex-direction: column;
+        margin: 2% 0;
+    }
+
+
+    .input-container, .edit-input, .edit-label, .edit-btn-container {
+        display: flex;
+    }
+
+
+    #editForm {
+        border-radius: 30px;
+        background: white;
+    }
+
+
+    #editForm p {
+        margin-top: 30px;
+        margin-left: 30%;
+        border-radius: 30px;
+        background: #343660;
+        width: 40%;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+
+
+    .form-content {
+        margin-top: 30px;
+        width: 50%;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, .1),
+            0 0 10px rgba(0, 0, 0, .2),
+            0 0 15px rgba(0, 0, 0, .2);
+    }
+
+
+    .edit-label {
+        font-size: 15px;
+        color: #3d4074;
+        margin: 0;
+        justify-content: flex-start;
+        width: 100%;
+        margin-left: 60px;
+    }
+
+
+    .input-container {
+        align-items: center;
+        margin: 15px;
+    }
+
+
+    .edit-input {
+        justify-content: flex-end;
+        width: 100%;
+        margin: 0;
+        margin-right: 60px;
+        border-radius: 30px;
+    }
+
+
+    .edit-btn-container {
+        gap: 50px;
+        margin: 0 10%;
+        padding-bottom: 5%;
+    }
+
+
+    .edit-btn-container button {
+        margin-top: 10px;
+        border-radius: 30px;
+    }
+
+
+</style>
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    <link href="/static/style.css" rel="stylesheet">
+    <title>KollinKars {% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="/static/image/logov2.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dubai&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert-bottom">
+                {% for category, message in messages %}
+                    <div class="flash alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+
+    {% if session.get("user_id") %}
+        <div class="container" style="border: 0px;">
+            <div class="left"  style="box-shadow: 0 0 5px rgba(0, 0, 0, .1), 0 0 10px rgba(0, 0, 0, .2), 0 0 15px rgba(0, 0, 0, .2);">
+                <header>
+                    {% block content %}{% endblock %}
+                </header>
+                <div class="about">
+                    <form action="/logout" method="post">
+                        <button type="submit" style="width:120px; color:white; border-radius:30px;">
+                            Log Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="right">
+                {% block additional_content %}{% endblock %}
+            </div>
+        </div>
+
+
+    {% else %}
+    <div class="container bg">
+        <div class="mainportal">
+            <div class="signup">
+                <form action="/login" method="post" autocomplete="off">
+                    <label for="chk" aria-hidden="true" style="margin-top: 65px">Log In</label>
+
+
+                    <!-- Role Selection -->
+                <h4 style="font-size: 1.3rem;">Please select your role</h4>
+                <div style="display: flex; justify-content: space-between; margin: 0 12rem; margin-bottom: 30px;">
+                    <button type="button" class="role-btn {% if request.form.get('role') == 'client' or not request.form.get('role') %}active{% endif %}"
+                            onclick="setRole('client')">Client</button>
+                    <button type="button" class="role-btn {% if request.form.get('role') == 'admin' %}active{% endif %}"
+                            onclick="setRole('admin')">Admin</button>
+                </div>
+
+
+                <input type="hidden" id="role" name="role" value="client"> <!-- Default role -->
+
+
+                <!-- Dynamic Label -->
+                <h4 style="font-size: 1.3rem;" id="dynamic-label">Customer ID</h4>
+                <input type="text" autocomplete="off" name="username" required>
+
+
+                <h4 style="font-size: 1.3rem;">Password</h4>
+                <input type="password" autocomplete="off" name="password" required>
+
+
+                <button type="submit">Log In</button>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        function setRole(role) {
+            document.getElementById('role').value = role;
+            document.getElementById('dynamic-label').textContent = role === 'admin' ? 'Admin Username' : 'Customer ID';
+
+
+            // Toggle the active class on buttons
+            const buttons = document.querySelectorAll('.role-btn');
+            buttons.forEach(button => {
+                if (button.textContent.toLowerCase() === role) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+    </script>
+    <style>
+        .alert {
+            padding: 15px;
+            margin: 10px auto;
+            width: 30%;
+            text-align: center;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+
+        .alert-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+
+
+
+
+    {% endif %}
+</body>
+</html>
+
+
+

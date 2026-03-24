@@ -1,0 +1,203 @@
+{% extends "index.html" %}
+
+{% block title %}
+    Dashboard: Book Rentals
+{% endblock %}
+
+{% block content %}
+<div class="logo">
+    <img src="/static/image/logov2.png" alt="KollinKars Logo" width="85%">
+    <div class="close">
+        <span class="material-symbols-outlined">close</span>
+    </div>
+</div>
+<nav>
+    <ul>
+        <li>
+            <a href="/client" id="dashboard-link" class="fill" style="padding-left: 5px;">
+                <span class="material-symbols-outlined full">
+                    bookmark_add
+                </span>
+                <span class="title-full">
+                    Book Vehicle
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/book" id="sql-link" style="padding-left: 5px;">
+                <span class="material-symbols-outlined">
+                    beenhere
+                </span>
+                <span class="title">
+                    Current Bookings
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/manage" id="edit-link" style="padding-left: 5px;">
+                <span class="material-symbols-outlined">
+                    build
+                </span>
+                <span class="title">
+                    Manage Bookings
+                </span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block additional_content %}
+<div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%; gap: 10px;">
+    <h1 class="text-center bowlby-one-regular" style="padding-top: 30px; margin-bottom: 0px;">Welcome to KollinKars!</h1>
+    <button style="width:50%; color:white; border-radius:30px; margin-bottom: 0px;">
+        Explore available vehicles below:
+    </button>
+    <div class="vehicle-list" style="max-height: 500px; overflow-y: auto; margin-top: 20px;">
+        {% for vehicle in vehicles %}
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#vehicle-{{ loop.index }}" aria-expanded="false" aria-controls="vehicle-{{ loop.index }}" style="height: 100%;">
+                    <div class="vehicle-image">
+                        <img src="/static/image/cars/{{ vehicle.vehicle_image }}" alt="{{ vehicle.vehicle_name }}" style="width: 200px;">
+                    </div>
+                    <div class="vehicle-info" data-vehicle-id="{{ vehicle.Vehicle_ID }}">
+                        <span>{{ vehicle.vehicle_name }}</span>
+                        <p>{{ vehicle.seats }} seater | {{ vehicle.color }}</p>
+                    </div>
+                </button>
+            </h2>
+            <div id="vehicle-{{ loop.index }}" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <div class="vehicle-info">
+                        <div class="insurance-options" style="text-align: center;">
+                            <button class="insurance-btn" data-insurance="gold">Gold - 500 PHP</button>
+                            <button class="insurance-btn" data-insurance="silver">Silver - 300 PHP</button>
+                            <button class="insurance-btn" data-insurance="bronze">Bronze - 100 PHP</button>
+                        </div>
+                    </div>
+                    <button class="confirm-booking-btn" disabled style="background-color: green; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px;">Confirm Booking</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const insuranceButtons = document.querySelectorAll('.insurance-btn');
+    const confirmButtons = document.querySelectorAll('.confirm-booking-btn');
+
+    insuranceButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const parent = button.closest('.accordion-body');
+            const allInsuranceButtons = parent.querySelectorAll('.insurance-btn');
+            const confirmButton = parent.querySelector('.confirm-booking-btn');
+
+            allInsuranceButtons.forEach(btn => btn.classList.remove('selected'));
+
+            button.classList.add('selected');
+
+            confirmButton.disabled = false;
+
+            confirmButton.dataset.selectedInsurance = button.dataset.insurance;
+        });
+    });
+
+    confirmButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const selectedInsurance = button.dataset.selectedInsurance;
+
+            if (selectedInsurance) {
+                const startDate = prompt('Enter start date (YYYY-MM-DD):');
+                const endDate = prompt('Enter end date (YYYY-MM-DD):');
+                const pickupLocation = prompt('Enter pickup location:');
+                const returnLocation = prompt('Enter return location:');
+
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                const locationRegex = /^[A-Z][a-zA-Z\s]*$/;
+                const currentDate = new Date().toISOString().split('T')[0];
+
+                if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+                    alert('Invalid date format. Please use YYYY-MM-DD and only integers with a hyphen (-).');
+                    return;
+                }
+
+                if (startDate < currentDate || endDate < currentDate) {
+                    alert('Rental start date and end date cannot be earlier than the current date.');
+                    return;
+                }
+
+                if (!locationRegex.test(pickupLocation) || !locationRegex.test(returnLocation)) {
+                    alert('Invalid location format. Only letters and spaces are allowed, and the first letter must be capitalized.');
+                    return;
+                }
+
+                const vehicleId = button.closest('.accordion-item').querySelector('.vehicle-info').dataset.vehicleId;
+
+                fetch('/api/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        vehicle_id: vehicleId,
+                        insurance: selectedInsurance,
+                        start_date: startDate,
+                        end_date: endDate,
+                        pickup_location: pickupLocation,
+                        return_location: returnLocation
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Booking confirmed!\nRental ID: ${data.rental_id}\nInsurance: ${selectedInsurance}\nStart Date: ${startDate}\nEnd Date: ${endDate}\nPickup Location: ${pickupLocation}\nReturn Location: ${returnLocation}`);
+                    } else {
+                        alert(`Error: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while confirming the booking.');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.insurance-btn {
+    background-color: lightgray;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.insurance-btn.selected {
+    background-color: blue;
+    color: white;
+}
+
+.insurance-btn:hover {
+    background-color: gray;
+    color: white;
+}
+
+.confirm-booking-btn[disabled] {
+    background-color: lightgray;
+    cursor: not-allowed;
+}
+
+.insurance-options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+</style>
+{% endblock %}

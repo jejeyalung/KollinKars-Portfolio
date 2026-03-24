@@ -1,0 +1,264 @@
+{% extends "index.html" %}
+
+
+{% block title %}
+    Dashboard: View Records
+{% endblock %}
+
+
+{% block content %}
+<div class="logo">
+    <img src="/static/image/logov2.png" alt="KollinKars Logo" width="85%">
+    <div class="close">
+        <span class="material-symbols-outlined">close</span>
+    </div>
+</div>
+<nav>
+    <ul>
+        <li>
+            <a href="/" id="dashboard-link" class="fill">
+                <span class="material-symbols-outlined full">
+                    visibility
+                </span>
+                <span class="title-full">
+                    View
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/add" id="add-link">
+                <span class="material-symbols-outlined">
+                    add_box
+                </span>
+                <span class="title">
+                    Add
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/update" id="edit-link">
+                <span class="material-symbols-outlined">
+                    edit
+                </span>
+                <span class="title">
+                    Update
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="/mysql" id="sql-link">
+                <span class="material-symbols-outlined">
+                    integration_instructions
+                </span>
+                <span class="title">
+                    Statistics
+                </span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+
+{% block additional_content %}
+<div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%;">
+    <div style="display: flex; justify-content: space-between; margin-left: 12rem; margin-right: 12rem; margin-bottom: 0px;">
+        <button class="table-btn" data-table="rental">Car Rentals</button>
+        <button class="table-btn active" data-table="customer">Customers</button>
+        <button class="table-btn" data-table="vehicle">Vehicles</button>
+    </div>
+    <div class="table-container">
+        <table id="data-table">
+            <thead id="table-head" class="attributes">
+                <!-- Table headers will be inserted here -->
+            </thead>
+            <tbody id="table-body">
+                <!-- Table data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="inputBox" style="display: flex;">
+        <input type="text" autocomplete="off" placeholder="Enter Primary Key..." id="userInput">
+        <button type="submit" id="searchButton">View Record</button>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableButtons = document.querySelectorAll('.table-btn');
+        const searchButton = document.getElementById('searchButton');
+        const userInput = document.getElementById('userInput');
+        let currentTable = 'customer';
+
+
+        tableButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tableName = this.getAttribute('data-table');
+                currentTable = tableName;
+                fetchTableData(tableName);
+                tableButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+
+        searchButton.addEventListener('click', () => {
+            const searchValue = userInput.value.trim().toLowerCase();
+            if (searchValue) {
+                searchAndHighlight(searchValue);
+            }
+        });
+
+
+        function fetchTableData(tableName) {
+            fetch(`/get_table_data/${tableName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableHead = document.getElementById('table-head');
+                    const tableBody = document.getElementById('table-body');
+
+
+                    // Clear existing table data
+                    tableHead.innerHTML = '';
+                    tableBody.innerHTML = '';
+
+
+                    if (data.data.length > 0) {
+                        const columnNames = data.columns;
+                        let headerRow = '<tr>';
+                        columnNames.forEach(column => {
+                            headerRow += `<td>${column}</td>`;
+                        });
+                        headerRow += '</tr>';
+                        tableHead.innerHTML = headerRow;
+
+
+                        data.data.forEach(row => {
+                            let dataRow = '<tr>';
+                            columnNames.forEach(column => {
+                                dataRow += `<td>${row[column]}</td>`;
+                            });
+                            dataRow += '</tr>';
+                            tableBody.innerHTML += dataRow;
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching table data:', error));
+        }
+
+
+        function searchAndHighlight(searchValue) {
+            const tableBody = document.getElementById('table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+            let found = false;
+
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (cells[0] && cells[0].innerText.trim().toLowerCase() === searchValue) {
+                    rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    rows[i].style.backgroundColor = '#ffff99';
+                    setTimeout(() => {
+                        rows[i].style.backgroundColor = '#61C160';
+                    }, 2000);
+                    found = true;
+                    break;
+                }
+            }
+
+
+            if (!found) {
+                alert('Record not found');
+            }
+        }
+
+
+        // Fetch initial data for customer table
+        fetchTableData('customer');
+    });
+</script>
+
+
+
+
+<style>
+    .inputBox {
+        margin: 1px auto;
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 40px;
+        border-radius: 30px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        margin-top: 0px;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 0px;
+        border-color: gray;
+    }
+
+
+    thead, tbody {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        border-width: 0px;
+        border-color: gray;
+    }
+
+
+    .attributes {
+        background: #522194;
+        color: white;
+        text-align: center;
+    }
+
+
+    .table-container {
+        overflow-x: auto;
+        overflow-y: auto;
+        margin-bottom: 70px;
+    }
+
+
+    th, td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    th {
+        background-color: #f8f9fa;
+    }
+
+
+    td {
+        border-right: 1px solid #ddd;
+        border-left: 1px solid #ddd;
+    }
+
+
+    .actions {
+        white-space: nowrap;
+    }
+
+
+    .actions form {
+        display: inline;
+    }
+</style>
+{% endblock %}
+
+
+

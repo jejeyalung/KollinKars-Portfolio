@@ -1,0 +1,16 @@
+{% extends "index.html" %}
+
+{% block title %}
+    Apology
+{% endblock %}
+
+{% block main %}
+    <div class="forms">
+        {% if get_flashed_messages() %}
+            <div role="alert">
+                <h1>{{ get_flashed_messages() | join(" ") }}</h1>
+            </div>
+        {% endif %}
+        <img src="https://media4.giphy.com/media/MyibCKeY7w2TS/giphy.gif?cid=ecf05e47kyce54c7sedzkuqsw284afc98phadrynmcyo4p3c&rid=giphy.gif&ct=s" class="center" title="error" style="width:400px;">
+    </div>
+{% endblock %}

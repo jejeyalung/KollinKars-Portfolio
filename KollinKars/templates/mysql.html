@@ -1,0 +1,284 @@
+{% extends "index.html" %}
+
+
+{% block title %}
+    Dashboard: View Statistics
+{% endblock %}
+
+
+{% block content %}
+    <div class="logo">
+        <img src="/static/image/logov2.png" alt="PhilHealth Logo" width="80%">
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <nav>
+        <ul>
+            <li>
+                <a href="/dashboard" id="dashboard-link">
+                    <span class="material-symbols-outlined">
+                        visibility
+                    </span>
+                    <span class="title">
+                        View
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/add" id="add-link">
+                    <span class="material-symbols-outlined">
+                        add_box
+                    </span>
+                    <span class="title">
+                        Add
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/update" id="edit-link">
+                    <span class="material-symbols-outlined">
+                        edit
+                    </span>
+                    <span class="title">
+                        Update
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/mysql" id="sql-link" class="fill">
+                    <span class="material-symbols-outlined full">
+                        integration_instructions
+                    </span>
+                    <span class="title-full">
+                        Statistics
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+
+{% block additional_content %}
+    <div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; margin-left: 12rem; margin-right: 12rem; margin-bottom: 0px;">
+            <button class="query-btn active" data-index="0">Active Clients</button>
+            <button class="query-btn" data-index="1">Rentals Status</button>
+            <button class="query-btn" data-index="2">Available Vehicles</button>
+            <!-- <button class="query-btn" data-index="2">Difficult-Level Query</button> -->
+        </div>
+
+
+        <!-- Table that displays current Active Clients (by which current date of computer fits the period between rental_StartDate and Rental_EndDate attributes in the table) -->
+        <div class="query-section" data-index="0" style="display: none; margin-top: 20px;">
+            <div class="table-container">
+                <table>
+                    <thead class="attributes">
+                        <tr>
+                            <td>Client ID</td>
+                            <td>Rental End Date</td>
+                            <td>Rental Start Date</td>
+                            <td>Vehicle ID</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Active clients data will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+
+        <!-- Table that displays Rentals Status (Car Rentals Rental_Status = paid, then unpaid) -->
+        <div class="query-section" data-index="1" style="display: none; margin-top: 20px;">
+            <div class="table-container">
+                <table>
+                    <thead class="attributes">
+                        <tr>
+                            <td>Contact Number</td>
+                            <td>Customer</td>
+                            <td>Payment Status</td>
+                            <td>Rental ID</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Current rentals data will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+
+        <!-- Table that displays current Available Vehicles (by which vehicle table's Vehicle_Status == "Available") -->
+        <div class="query-section" data-index="2" style="margin-top: 20px;">
+            <!-- <h4 style="color: #522194; font-size: 1rem;">Available Vehicles:</h4> -->
+            <div class="table-container">
+                <table>
+                    <thead class="attributes">
+                        <tr>
+                            <td>Vehicle ID</td>
+                            <td>Model</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in available_vehicles %}
+                        <tr>
+                            <td>{{ row['Vehicle_ID'] }}</td>
+                            <td>{{ row['Vehicle_Name'] }}</td>
+                            <td>{{ row['Vehicle_Status'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const queryButtons = document.querySelectorAll(".query-btn");
+            const querySections = document.querySelectorAll(".query-section");
+
+
+            const fetchData = (url, container) => {
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            container.querySelector("tbody").innerHTML = "<tr><td colspan='4'>No data found.</td></tr>";
+                            return;
+                        }
+                        const rowsHtml = data.map(row => {
+                            return `<tr>${Object.values(row).map(value => `<td>${value}</td>`).join('')}</tr>`;
+                        }).join('');
+                        container.querySelector("tbody").innerHTML = rowsHtml;
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
+                    });
+            };
+
+
+            queryButtons.forEach(button => {
+                button.addEventListener("click", () => {
+                    queryButtons.forEach(btn => btn.classList.remove("active"));
+                    button.classList.add("active");
+
+
+                    const index = button.dataset.index;
+                    querySections.forEach(section => section.style.display = "none");
+                    const activeSection = querySections[index];
+                    activeSection.style.display = "block";
+
+
+                    if (index === "0") {
+                        fetchData("/active_clients", activeSection);
+                    } else if (index === "1") {
+                        fetchData("/current_rentals", activeSection);
+                    } else if (index === "2") {
+                        fetchData("/available_vehicles", activeSection);
+                    }
+                });
+            });
+
+
+            queryButtons[0].click(); // Trigger first button click
+        });
+    </script>
+
+
+<style>
+    .table-container {
+        overflow-y: auto;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 0px;
+        margin-bottom: 20px;
+        border-color: gray;
+        overflow-y: auto;
+        height: 40%;
+    }
+
+
+    thead, tbody {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        border-width: 0px;
+        border-color: gray;
+    }
+
+
+    .attributes{
+        background: #522194;
+        color: white;
+        text-align: center;
+    }
+
+
+    .action {
+        background: white;
+        color: #55a654;
+        border: 0px;
+    }
+
+
+    th, td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    th {
+        background-color: #f8f9fa;
+    }
+
+
+    td {
+        border-right: 1px solid #ddd;
+        border-left: 1px solid #ddd;
+    }
+
+
+    .actions {
+        white-space: nowrap;
+    }
+
+
+    .actions form {
+        display: inline;
+
+
+    }
+
+
+    .active {
+        background: #454879;
+        color: #fff;
+    }
+
+
+    .query-btn {
+    width: 70%;
+    margin: 10px;
+    margin-bottom: 8px;
+}
+</style>
+{% endblock %}
+
+
+
+
+

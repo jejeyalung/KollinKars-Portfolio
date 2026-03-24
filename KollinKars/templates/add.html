@@ -1,0 +1,352 @@
+{% extends "index.html" %}
+
+
+{% block title %}
+    Dashboard: Add Record
+{% endblock %}
+
+
+{% block content %}
+    <div class="logo">
+        <img src="/static/image/logov2.png" alt="PhilHealth Logo" width="80%">
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <nav>
+        <ul>
+            <li>
+                <a href="/dashboard" id="dashboard-link">
+                    <span class="material-symbols-outlined">
+                        visibility
+                    </span>
+                    <span class="title">
+                        View
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/add" id="add-link" class="fill">
+                    <span class="material-symbols-outlined full">
+                        add_box
+                    </span>
+                    <span class="title-full">
+                        Add
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/update" id="edit-link">
+                    <span class="material-symbols-outlined">
+                        edit
+                    </span>
+                    <span class="title">
+                        Update
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/mysql" id="sql-link">
+                    <span class="material-symbols-outlined">
+                        integration_instructions
+                    </span>
+                    <span class="title">
+                        Statistics
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+
+{% block additional_content %}
+<div class="container right" style="background: rgba(255, 255, 255, 1); margin-right: 0px; width: 98%;">
+    <div style="display: flex; justify-content: space-between; margin-left: 12rem; margin-right: 12rem; margin-bottom: 0px;">
+        <button class="table-btn active" data-table="rental">Car Rentals</button>
+        <button class="table-btn" data-table="customer">Customers</button>
+        <button class="table-btn" data-table="vehicle">Vehicles</button>
+    </div>
+    <div id="form-container">
+        <!-- Form content will be inserted here -->
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableButtons = document.querySelectorAll('.table-btn');
+        let currentTable = 'rental';
+
+
+        tableButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const tableName = this.getAttribute('data-table');
+                currentTable = tableName;
+                fetchTableSchema(tableName);
+                tableButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+
+        function fetchTableSchema(tableName) {
+            fetch(`/get_table_schema/${tableName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch table schema');
+                    }
+                    return response.json();
+                })
+                .then(columns => {
+                    const formContainer = document.getElementById('form-container');
+                    formContainer.innerHTML = `
+                        <form id="addForm">
+                            <p>ADD NEW RECORD TO ${tableName.toUpperCase()}</p>
+                            ${columns.map(column => `
+                                <div class="input-container">
+                                    <label for="${column.name}" class="edit-label">${column.name}</label>
+                                    <input type="text" id="${column.name}" name="${column.name}" class="edit-input" placeholder="${column.type}">
+                                </div>
+                            `).join('')}
+                            <div class="edit-btn-container">
+                                <button type="submit">Add Record</button>
+                            </div>
+                            <div id="error-message" style="color: red; margin-top: 10px; text-align: center;"></div>
+                        </form>
+                    `;
+
+
+                    const form = document.getElementById('addForm');
+                    form.addEventListener('submit', handleFormSubmit);
+                })
+                .catch(error => {
+                    console.error('Error fetching table schema:', error);
+                    const formContainer = document.getElementById('form-container');
+                    formContainer.innerHTML = `
+                        <div style="color: red; text-align: center; margin: 20px;">
+                            Failed to load form. Please try again later.
+                        </div>
+                    `;
+                });
+        }
+
+
+        function validateInput(fieldType, value) {
+            if (fieldType === "INTEGER") {
+                return /^\d+$/.test(value); // Only digits
+            } else if (fieldType === "TEXT") {
+                return /^[\w\s]+$/.test(value); // Alphanumeric and spaces
+            } else if (fieldType === "REAL") {
+                return /^\d+(\.\d+)?$/.test(value); // Floating-point numbers
+            } else if (fieldType === "DATE") {
+                return /^\d{4}-\d{2}-\d{2}$/.test(value); // YYYY-MM-DD
+            }
+            return true; // Default to true for unhandled types
+        }
+
+
+        function validateIdFormat(fieldName, value) {
+            const idPatterns = {
+                "Rental_ID": /^RENT\d{1,11}$/,      // RENT followed by up to 11 digits
+                "Customer_ID": /^CUST\d{1,6}$/,     // CUST followed by up to 6 digits
+                "Vehicle_ID": /^Vehicle\d{1,3}$/    // Vehicle followed by up to 3 digits
+            };
+            const pattern = idPatterns[fieldName];
+            if (pattern && !pattern.test(value)) {
+                return `${fieldName} must follow the correct format`;
+            }
+            return null;
+        }
+
+
+
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const addData = { table: currentTable };
+            let errorMessage = "";
+
+
+            formData.forEach((value, key) => {
+                const inputField = document.getElementById(key);
+                const expectedType = inputField.getAttribute("data-type");
+                if (!validateInput(expectedType, value)) {
+                    errorMessage += `Field "${key}" must be of type ${expectedType}.\n`;
+                }
+                addData[key] = value.trim();
+            });
+
+
+            if (errorMessage) {
+                const errorElement = document.getElementById("error-message");
+                errorElement.textContent = errorMessage;
+                return;
+            }
+
+
+            // Submit valid data to the server
+            fetch('/add_record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(addData),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    const errorElement = document.getElementById("error-message");
+                    if (result.success) {
+                        alert("Record added successfully");
+                        fetchTableSchema(currentTable); // Refresh form
+                    } else {
+                        errorElement.textContent = result.error || "Failed to add record.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error adding record:", error);
+                    document.getElementById("error-message").textContent =
+                        "An error occurred while adding the record. Please try again.";
+                });
+        }
+
+
+
+
+        // Fetch initial form for rental table
+        fetchTableSchema('rental');
+    });
+</script>
+
+
+<style>
+    .inputBox {
+        margin: 1px auto;
+        bottom: 25px;
+        left: 50%;
+        height: 40px;
+        border-radius: 30px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        margin-top: 0px;
+    }
+
+
+    .action {
+        background: white;
+        color: #55a654;
+        border: 0px;
+    }
+
+
+    th, td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    th {
+        background-color: #f8f9fa;
+    }
+
+
+    td {
+        border-right: 1px solid #ddd;
+        border-left: 1px solid #ddd;
+    }
+
+
+    .actions {
+        white-space: nowrap;
+    }
+
+
+    .actions form {
+        display: inline;
+    }
+
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .input-container, .edit-input, .edit-label, .edit-btn-container {
+        display: flex;
+    }
+
+
+    #addForm {
+        height: 500px;
+        overflow-y: auto;
+        border-radius: 30px;
+        background: white;
+    }
+
+
+    #addForm p {
+        border-radius: 30px;
+        background: #343660;
+        width: 40%;
+        margin: auto;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+
+
+    .form-content {
+        margin-top: 30px;
+        width: 50%;
+        background: linear-gradient(#8cc650, #5FBF5E);
+        border-radius: 30px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, .1),
+            0 0 10px rgba(0, 0, 0, .2),
+            0 0 15px rgba(0, 0, 0, .2);
+    }
+
+
+    .edit-label {
+        font-size: 15px;
+        color: #3d4074;
+        margin: 0;
+        justify-content: flex-start;
+        width: 100%;
+        margin-left: 120px;
+    }
+
+
+    .input-container {
+        align-items: center;
+        margin: 15px;
+    }
+
+
+    .edit-input {
+        justify-content: flex-end;
+        width: 100%;
+        margin: 0;
+        margin-right: 120px;
+        border-radius: 30px;
+    }
+
+
+    .edit-btn-container {
+        gap: 50px;
+        margin: 0 10%;
+    }
+
+
+    .edit-btn-container button {
+        margin-top: 10px;
+        border-radius: 30px;
+    }
+
+
+</style>
+{% endblock %}
+
+
+
